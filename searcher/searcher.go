@@ -1,6 +1,7 @@
 package searcher
 
 import (
+	"database/sql"
 	"fmt"
 	"my_projects/horse_maze/maze"
 	"os"
@@ -27,17 +28,29 @@ type WrongBranches []Branch
 var testBranches = TestBranches{}
 var startBranch = Branch{}
 
+func isDead(deadCells []maze.Point, point maze.Point) bool {
+	for _, dead := range deadCells {
+		if dead.X == point.X && dead.Y == point.Y {
+			return true
+		}
+	}
+	return false
+}
+
 //StartSearch func
-func StartSearch(thisMaze maze.Maze) (branch Branch) {
+func StartSearch(thisMaze maze.Maze, db *sql.DB) {
 	ThisMaze = thisMaze
-	WinnerBranchLen = (ThisMaze.Height + 1) * (ThisMaze.Width + 1)
-	fmt.Println(WinnerBranchLen)
+	WinnerBranchLen = (ThisMaze.Height+1)*(ThisMaze.Width+1) - len(ThisMaze.DeadCells)
 	for x := 0; x <= ThisMaze.Width; x++ {
 		for y := 0; y <= ThisMaze.Height; y++ {
 			startPoint := maze.Point{X: x, Y: y}
+			if isDead(ThisMaze.DeadCells, startPoint) {
+				continue
+			}
 			fmt.Printf("startPoint %+v\n", startPoint)
 			startBranch = append(startBranch, startPoint)
-			testBranches = append(testBranches, startBranch)
+			testBranches = append(testBranches, startBranch) //добавляем одну тестовую ветку (1й ход)
+			//цикл, пока ветвление ветки себя не исчерпает
 			for len(testBranches) != 0 {
 				// _ = resources.GetAvailableMemory()
 				lastBranch := testBranches[len(testBranches)-1] //вырезаем последнюю ветку из массива веток
@@ -48,14 +61,14 @@ func StartSearch(thisMaze maze.Maze) (branch Branch) {
 
 				availableTurns = fullVarnsdorfFilter(lastBranch, availableTurns) //реализуем правило Варнсдорфа
 				// fmt.Println(availableTurns)
-				availableBranches := initiateAvailableBranches(availableTurns, lastBranch) //создаём доступные
+				availableBranches := initiateAvailableBranches(availableTurns, lastBranch, db) //создаём доступные
 				testBranches = append(testBranches, availableBranches...)
 			}
+
 			startBranch = startBranch[:0]
 			testBranches = testBranches[:0]
 		}
 	}
-	return branch
 }
 
 var minVariants = 8
@@ -80,14 +93,17 @@ func fullVarnsdorfFilter(branch Branch, turns []maze.Point) (setTurns []maze.Poi
 	return setTurns
 }
 
-func initiateAvailableBranches(turns []maze.Point, branch Branch) (branches []Branch) {
+func initiateAvailableBranches(turns []maze.Point, branch Branch, db *sql.DB) (branches []Branch) {
 	for _, turn := range turns {
 		newBranch := append(branch, turn)
-		if len(newBranch) > MaxLenBranch {
-			MaxLenBranch = len(newBranch)
-			fmt.Println("New record: ", MaxLenBranch)
-			// WriteFile(newBranch)
+		if len(newBranch) == WinnerBranchLen {
+			// fmt.Println("Winner: ", newBranch)
+			WriteFile(newBranch, db)
 		}
+		// if len(newBranch) > MaxLenBranch {
+		// 	MaxLenBranch = len(newBranch)
+		// 	// fmt.Println("New record: ", MaxLenBranch)
+		// }
 		branches = append(branches, newBranch)
 	}
 	return branches
@@ -133,14 +149,14 @@ func checkExistTurn(branch Branch, tryingPoint maze.Point) bool {
 func checkCorrectingTurn(tryingPoint maze.Point) bool {
 	XCorrect := (tryingPoint.X <= ThisMaze.Width) && (tryingPoint.X >= 0)
 	YCorrect := (tryingPoint.Y <= ThisMaze.Height) && (tryingPoint.Y >= 0)
-	if XCorrect && YCorrect {
+	if XCorrect && YCorrect && !isDead(ThisMaze.DeadCells, tryingPoint) {
 		return true
 	}
 	return false
 }
 
 //WriteFile func
-func WriteFile(branch Branch) {
+func WriteFile(branch Branch, db *sql.DB) {
 	f, err := os.OpenFile("./log.txt", os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		panic(err)
@@ -155,4 +171,19 @@ func WriteFile(branch Branch) {
 	if _, err = f.WriteString(str); err != nil {
 		panic(err)
 	}
+	result, err := db.Exec("INSERT INTO winner_branches (lenth) VALUES (?)", len(branch))
+	if err != nil {
+		panic(err)
+	}
+	for i, turn := range branch {
+		branchID, _ := result.LastInsertId()
+		_, err := db.Exec("INSERT INTO horse_maze.turns (branch_id, `order`, x_coordinate, y_coordinate) VALUES (?, ?, ?, ?)", branchID, i, turn.X, turn.Y)
+		if err != nil {
+			panic(err)
+		}
+	}
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(result)
 }

@@ -2,8 +2,6 @@ package logger
 
 import (
 	"fmt"
-	"my_projects/horse_maze/searcher"
-	"os"
 	"runtime"
 )
 
@@ -29,4 +27,3 @@ func bToMb(b uint64) uint64 {
 // 		fmt.Println("New RecordLen: ", MaxLenBranch)
 // 	}
 // }
-

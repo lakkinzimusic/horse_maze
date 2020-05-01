@@ -1,8 +1,9 @@
 package maze
 
 type Maze struct {
-	Height int
-	Width  int
+	Height    int
+	Width     int
+	DeadCells []Point
 }
 
 //Point struct
