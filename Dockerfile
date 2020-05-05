@@ -1,7 +1,6 @@
-FROM scratch
-
-ENV PORT 8000
-EXPOSE $PORT
-
-COPY advent /
-CMD ["/advent"]
+FROM golang:latest 
+RUN mkdir /app 
+ADD . /app/ 
+WORKDIR /app 
+RUN go build -o main . 
+CMD ["/app/main"]
