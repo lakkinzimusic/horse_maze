@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"database/sql"
@@ -15,27 +15,4 @@ func InitDB() *sql.DB {
 	}
 	return db
 	// defer Database.Close() //разобраться, зачем закрывать db
-}
-
-type Cell struct {
-	Order int
-	X     int
-	Y     int
-}
-
-//GetBranch func
-func GetBranch(branch_id int, db *sql.DB) (cells []Cell) {
-	rows, err := db.Query("SELECT t.order, t.x_coordinate, t.y_coordinate FROM winner_branches wb JOIN turns t ON wb.id = t.branch_id WHERE wb.id = (?) ORDER BY t.y_coordinate, t.x_coordinate ", branch_id)
-	if err != nil {
-		panic(err)
-	}
-	for rows.Next() {
-		c := Cell{}
-		err := rows.Scan(&c.Order, &c.X, &c.Y)
-		if err != nil {
-			panic(err)
-		}
-		cells = append(cells, c)
-	}
-	return cells
 }

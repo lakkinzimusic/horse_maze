@@ -10,7 +10,7 @@ CONTAINER_IMAGE?=docker.io/lakkinzimusic/${APP}
 GOOS?=linux
 GOARCH?=amd64
 
-clean:
+clean: 
 	rm -f ${APP}
 
 build: clean
