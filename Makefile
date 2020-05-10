@@ -10,7 +10,10 @@ CONTAINER_IMAGE?=docker.io/lakkinzimusic/${APP}
 GOOS?=linux
 GOARCH?=amd64
 
-clean: 
+commit: 
+	./build.sh
+
+clean: commit
 	rm -f ${APP}
 
 build: clean
