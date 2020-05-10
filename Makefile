@@ -1,4 +1,4 @@
-PROJECT?=my_projects/horse_maze
+PROJECT?=horse_maze
 APP?=horsemaze
 PORT?=8000
 

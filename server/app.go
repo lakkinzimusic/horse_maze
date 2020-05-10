@@ -7,26 +7,29 @@ import (
 	"os"
 	"os/signal"
 	"time"
+
 	"github.com/gorilla/mux"
 	"github.com/lakkinzimusic/horse_maze/auth"
 	authhttp "github.com/lakkinzimusic/horse_maze/auth/handler"
-	authsql "github.com/lakkinzimusic/horse_maze/auth/repository/mysql"
+	authsql "github.com/lakkinzimusic/horse_maze/auth/repository"
 	authusecase "github.com/lakkinzimusic/horse_maze/auth/usecase"
+	"github.com/lakkinzimusic/horse_maze/db"
 )
 
+//App struct
 type App struct {
-	httpServer *http.Server
-	authUseCase     auth.UseCase
+	httpServer  *http.Server
+	authUseCase auth.UseCase
 }
 
 //NewApp func
 func NewApp() *App {
-	db := initDB()
+	db := db.InitDB()
 
-	userRepo := authsql.NewUserRepository(&db)
+	userRepo := authsql.NewUserRepository(db)
 
 	return &App{
-		authUseCase: authusecase.NewAuthUseCase(userRepo)
+		authUseCase: authusecase.NewAuthUseCase(userRepo),
 	}
 }
 
@@ -34,10 +37,7 @@ func NewApp() *App {
 func (a *App) Run(port string) error {
 	// Init gin handler
 	router := mux.NewRouter()
-	authhttp.RegisterHTTPEndpoints(router, a.authUC)
-
-	// API endpoints
-	authMiddleware := authhttp.NewAuthMiddleware(a.authUC)
+	authhttp.RegisterHTTPEndpoints(*router, a.authUseCase)
 
 	// HTTP Server
 	a.httpServer = &http.Server{

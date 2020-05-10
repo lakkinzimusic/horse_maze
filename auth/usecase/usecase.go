@@ -1,10 +1,6 @@
 package usecase
 
 import (
-	"time"
-
-	"github.com/lakkinzimusic/horse_maze/models"
-
 	"github.com/lakkinzimusic/horse_maze/auth"
 )
 
@@ -13,18 +9,14 @@ type AuthUseCase struct {
 }
 
 //NewAuthUseCase func
-func NewAuthUseCase(userRepo auth.UserRepository, hashSalt string, signingKey []byte, tokenTTLSeconds time.Duration) *AuthUseCase {
+func NewAuthUseCase(userRepo auth.UserRepository) *AuthUseCase {
 	return &AuthUseCase{userRepo: userRepo}
 }
 
 //SignUp func
 func (a *AuthUseCase) SignUp(username, password string) error {
-	user := &models.User{
-		Username: username,
-		Password: password,
-	}
 
-	return a.userRepo.CreateUser(user)
+	return a.userRepo.CreateUser(username, password)
 }
 
 //SignIn func
