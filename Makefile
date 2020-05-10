@@ -11,7 +11,7 @@ GOOS?=linux
 GOARCH?=amd64
 
 commit: 
-	./build.sh
+	./build.sh 
 
 clean: commit
 	rm -f ${APP}
