@@ -7,11 +7,14 @@ COMMIT?=$(shell git rev-parse --short HEAD)
 BUILD_TIME?=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
 CONTAINER_IMAGE?=docker.io/lakkinzimusic/${APP}
 
+
 GOOS?=linux
 GOARCH?=amd64
 
 commit: 
-	./build.sh 
+	git add .
+	git commit -m "message"
+	git push "https://$(shell git config user.name):$(shell git config user.password)@github.com/lakkinzimusic/horse_maze.git"
 
 clean: commit
 	rm -f ${APP}
