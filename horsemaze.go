@@ -15,13 +15,13 @@ import (
 )
 
 func main() {
-
+	repo := &Repository{}
 	log.Printf(
 		"Starting the service on port %s...\ncommit: %s, build time: %s, release: %s",
 		version.Commit, version.BuildTime, version.Release,
 	)
 	port := os.Getenv("PORT")
-	port := "50051"
+	port = "50051"
 	if port == "" {
 		log.Fatal("Port is not set.")
 	}
@@ -34,6 +34,9 @@ func main() {
 	s := grpc.NewServer()
 	pb.RegisterShippingServiceServer(s, &service{repo})
 	reflection.Register(s)
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 
 	app := server.NewApp()
 	if err := app.Run(port); err != nil {
