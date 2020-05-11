@@ -11,6 +11,10 @@ CONTAINER_IMAGE?=docker.io/lakkinzimusic/${APP}
 GOOS?=linux
 GOARCH?=amd64
 
+protoc: 
+	protoc -I. --go_out=plugins=micro:. \
+		proto/consignment/consignment.proto
+
 commit: 
 	git add .
 	git commit -m "Docker, kubernetes, clean implemented"
