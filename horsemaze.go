@@ -8,7 +8,7 @@ import (
 
 	"github.com/lakkinzimusic/horse_maze/api/server"
 	"github.com/lakkinzimusic/horse_maze/api/version"
-	pb "github.com/lakkinzimusic/horse_maze/consignment"
+	pb "github.com/lakkinzimusic/horse_maze/proto/consignment"
 	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -21,6 +21,7 @@ func main() {
 		version.Commit, version.BuildTime, version.Release,
 	)
 	port := os.Getenv("PORT")
+	port := "50051"
 	if port == "" {
 		log.Fatal("Port is not set.")
 	}
