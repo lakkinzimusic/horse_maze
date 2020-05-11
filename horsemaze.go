@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/lakkinzimusic/horse_maze/version"
+	"github.com/lakkinzimusic/horse_maze/api/version"
 
-	"github.com/lakkinzimusic/horse_maze/server"
+	"github.com/lakkinzimusic/horse_maze/api/server"
 )
 
 func main() {
@@ -19,8 +19,8 @@ func main() {
 	if port == "" {
 		log.Fatal("Port is not set.")
 	}
-	app := server.NewApp()
 
+	app := server.NewApp()
 	if err := app.Run(port); err != nil {
 		log.Fatalf("%s", err.Error())
 	}

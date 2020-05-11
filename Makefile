@@ -1,6 +1,6 @@
 PROJECT?=horse_maze
 APP?=horsemaze
-PORT?=8000
+PORT?=8050
 
 RELEASE?=0.0.2
 COMMIT?=$(shell git rev-parse --short HEAD)
@@ -13,10 +13,10 @@ GOARCH?=amd64
 
 commit: 
 	git add .
-	git commit -m "message"
+	git commit -m "Docker, kubernetes, clean implemented"
 	git push "https://$(shell git config user.name):$(shell git config user.password)@github.com/lakkinzimusic/horse_maze.git"
 
-clean: commit
+clean: 
 	rm -f ${APP}
 
 build: clean
@@ -30,7 +30,7 @@ container: build
 
 run: container
 	docker stop $(APP):$(RELEASE) || true && docker rm $(APP):$(RELEASE) || true
-	docker run --name ${APP} -p ${PORT}:${PORT} --rm \
+	docker run --network="host" --name ${APP} -p ${PORT}:${PORT} --rm \
 		-e "PORT=${PORT}" \
 		$(APP):$(RELEASE)
 
@@ -40,11 +40,13 @@ test:
 push: container
 	docker push $(CONTAINER_IMAGE):$(RELEASE)
 
-minikube: push
-	for t in $(shell find ./ -type f -name "*.yaml"); do \
-        cat $$t | \
-        	sed -E "s/\{\{(\s*)\.Release(\s*)\}\}/$(RELEASE)/g" | \
-        	sed -E "s/\{\{(\s*)\.ServiceName(\s*)\}\}/$(APP)/g"; \
-        echo; \
-    done > tmp.yaml
-	kubectl apply -f tmp.yaml
+minikube:  push
+	kubectl delete secret mysql-secret
+	kubectl create -f ./kubernetes/mysql-secret.yaml
+	kubectl delete daemonsets,replicasets,services,deployments,pods,rc --all
+	kubectl apply -f ./kubernetes/app-mysql-deployment.yaml
+	kubectl apply -f ./kubernetes/app-mysql-service.yaml
+	kubectl apply -f ./kubernetes/mysql-db-deployment.yaml
+	kubectl apply -f ./kubernetes/mysql-db-pv.yaml
+	kubectl apply -f ./kubernetes/mysql-db-pvc.yaml
+	kubectl apply -f ./kubernetes/mysql-db-service.yaml

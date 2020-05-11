@@ -1,0 +1,43 @@
+version: '3.4'
+
+services:
+
+  app:
+    image: docker.io/lakkinzimusic/horsemaze:0.0.2
+    container_name: horsemaze
+    build: .
+    ports: 
+      - 8050:8050 
+    restart: on-failure
+    volumes:
+      - api:/home/lakkinzimusic/prog/src/github.com/lakkinzimusic/horse_maze/
+    depends_on:
+      - fullstack-mysql           
+    networks:
+      - fullstack
+  
+  fullstack-mysql:
+    image: mysql:5.7
+    container_name: full_db_mysql
+    ports: 
+      - 3307:3307
+    environment: 
+      - MYSQL_ROOT_HOST=${DB_HOST} 
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - database_mysql:/var/lib/mysql
+    networks:
+      - fullstack
+  
+
+volumes:
+  api:
+  database_mysql:                   # Uncomment this when using mysql.
+
+# Networks to be created to facilitate communication between containers
+networks:
+  fullstack:
+    driver: bridge

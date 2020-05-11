@@ -18,8 +18,8 @@ spec:
     spec:
       containers:
       - name: horsemaze
-        image: docker.io/lakkinzimusic/horsemaze:0.0.1
+        image: docker.io/lakkinzimusic/horsemaze:0.0.2
         imagePullPolicy: Always
         ports:
-        - containerPort: 8000
+        - containerPort: 8050
           protocol: TCP
