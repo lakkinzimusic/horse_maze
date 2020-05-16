@@ -1,6 +1,6 @@
 build:
 	protoc -I. --micro_out=. --go_out=. proto/consignment/consignment.proto
-	docker build -t consignment-service .
+	# docker build -t consignment-service .
 
 run:
 	docker run -p 50051:50051 \
